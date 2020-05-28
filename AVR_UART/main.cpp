@@ -79,6 +79,9 @@ void send_char(char data){
 	UDR0 = data;
 }
 
+void send_string(char *byte){
+	for(;*byte;byte++) send_char(*byte);
+}
 
 int main(void)
 {
