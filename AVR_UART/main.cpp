@@ -10,13 +10,17 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define BUFFER_SIZE 256
 char receive_buffer[BUFFER_SIZE];
 uint8_t buffer_position = 0;
 
 char querry[] = "AT";
-char response[] = "OK";
+char response[] = "OK\n";
+
+bool end_line = false;
 
 
 void set_baudrate(uint32_t baud){
@@ -108,7 +112,14 @@ void flush_buffer(){
 }
 
 ISR (USART0_RX_vect){
-	receive_buffer[buffer_position] = receive_char();
+	receive_buffer[buffer_position] = UDR0;
+
+	if(receive_buffer[buffer_position] == '\n') {
+	end_line = true;
+	
+}
+
+	
 	buffer_position++;
 	
 	if(buffer_position > BUFFER_SIZE) buffer_position = 0;
@@ -116,10 +127,20 @@ ISR (USART0_RX_vect){
 
 
 void listen(){
-	if(receive_buffer == querry){
-		flush_buffer();
+	if(end_line){
+
+		if(strncmp(receive_buffer,querry,2) == 0){
 		send_string(response);
+		flush_buffer();
+		}
+		else{
+			flush_buffer();
+		}
+		end_line = false;
 	}
+
+	
+
 }
 
 int main(void)
