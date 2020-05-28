@@ -73,13 +73,22 @@ void init_UART(uint16_t baudrate){
 	UCSR0C &= ~(1<<UMSEL01);
 	
 	}
+	
+void send_char(char data){
+	while(!(UCSR0A & (1<<UDRE0))){}
+	UDR0 = data;
+}
 
 
 int main(void)
 {
+	init_UART(9600);
+	
     
     while (1) 
     {
+		send_char('A');
+		_delay_ms(1000);
     }
 }
 
