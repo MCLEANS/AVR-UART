@@ -11,7 +11,7 @@
 #include <util/delay.h>
 
 
-void set_baudrate(uint16_t baud){
+void set_baudrate(uint32_t baud){
 	switch(F_CPU){
 		case 1000000UL:
 			switch(baud){
@@ -60,7 +60,7 @@ void set_baudrate(uint16_t baud){
 	}
 }
 
-void init_UART(uint16_t baudrate){
+void init_UART(uint32_t baudrate){
 	set_baudrate(baudrate);
 	//Enable RECEIVER and TRANSMITER
 	UCSR0B |= (1<<RXEN0) | (1<<TXEN0);
