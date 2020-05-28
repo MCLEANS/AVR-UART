@@ -10,6 +10,10 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#define BUFFER_SIZE 256
+char receive_buffer[BUFFER_SIZE];
+uint8_t buffer_position = 0;
+
 
 void set_baudrate(uint32_t baud){
 	switch(F_CPU){
@@ -82,6 +86,28 @@ void send_char(char data){
 void send_string(char *byte){
 	for(;*byte;byte++) send_char(*byte);
 }
+
+char receive_char(void){
+	char in_data;
+	in_data = UDR0;
+	return in_data;
+	
+}
+
+void flush_buffer(){
+	for(int i = 0; i < BUFFER_SIZE; i++){
+		receive_buffer[i] = '\0';
+	}
+}
+
+ISR(USART0_RX_vect){
+	receive_buffer[buffer_position] = receive_char();
+	buffer_position++;
+	
+	if(buffer_position > BUFFER_SIZE) buffer_position = 0;
+}
+
+
 
 int main(void)
 {
