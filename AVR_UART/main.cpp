@@ -9,10 +9,14 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 
 #define BUFFER_SIZE 256
 char receive_buffer[BUFFER_SIZE];
 uint8_t buffer_position = 0;
+
+char querry[] = "AT";
+char response[] = "OK";
 
 
 void set_baudrate(uint32_t baud){
@@ -75,6 +79,8 @@ void init_UART(uint32_t baudrate){
 	//set Asynchronous mode
 	UCSR0C &= ~(1<<UMSEL00);
 	UCSR0C &= ~(1<<UMSEL01);
+	//enable global Interrupt
+	sei();
 	
 	}
 	
@@ -96,11 +102,12 @@ char receive_char(void){
 
 void flush_buffer(){
 	for(int i = 0; i < BUFFER_SIZE; i++){
-		receive_buffer[i] = '\0';
+		receive_buffer[i] = 0x00;
 	}
+	buffer_position = 0;
 }
 
-ISR(USART0_RX_vect){
+ISR (USART0_RX_vect){
 	receive_buffer[buffer_position] = receive_char();
 	buffer_position++;
 	
@@ -108,6 +115,12 @@ ISR(USART0_RX_vect){
 }
 
 
+void listen(){
+	if(receive_buffer == querry){
+		flush_buffer();
+		send_string(response);
+	}
+}
 
 int main(void)
 {
@@ -116,8 +129,7 @@ int main(void)
     
     while (1) 
     {
-		send_string("JACK MCLEANS AGWAYA \r\n");
-		_delay_ms(1000);
+		listen();
     }
 }
 
